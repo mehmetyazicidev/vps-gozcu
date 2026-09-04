@@ -1,0 +1,18 @@
+.DS_Store
+.build/
+.swiftpm/
+DerivedData/
+.build-app/
+dist/
+*.xcuserstate
+*.xccheckout
+servers.json
+servers.local.json
+
+# Local development and signing material
+AGENTS.md
+.env*
+*.pem
+*.p12
+*.key
+*.mobileprovision
