@@ -6,7 +6,9 @@ on:
 
 jobs:
   test:
-    runs-on: macos-14
+    # Swift tools 6.0 is not available on the macos-14 image's default toolchain.
+    # macos-15 ships with Xcode 16 / Swift 6.x.
+    runs-on: macos-15
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
