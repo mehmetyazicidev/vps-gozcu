@@ -97,4 +97,4 @@ Bu proje [MIT Lisansı](LICENSE) ile dağıtılır.
 
 ## Durum
 
-İlk izleme ve yerel dağıtım akışı tamamlandı. Sonraki odak, sürüm yayın otomasyonu ve güvenli güncelleme kanalıdır. Uygulama 7/24 merkezi izleme hizmeti sunduğunu iddia etmez.
+İlk `v0.2.0` imzalı ve notarized macOS paketi GitHub Releases üzerinden yayınlandı. Sonraki odak, sürüm yayın otomasyonu ve güvenli güncelleme kanalıdır. Uygulama 7/24 merkezi izleme hizmeti sunduğunu iddia etmez.
