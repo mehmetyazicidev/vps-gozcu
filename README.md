@@ -74,6 +74,8 @@ swift build -c release     # release derlemesi
 
 Developer ID imzası, notarization, stapling ve Gatekeeper doğrulaması için [docs/DISTRIBUTION.md](docs/DISTRIBUTION.md) belgesini izleyin. Resmî imzalı paketler kaynak depoya değil, GitHub Releases'a eklenmelidir.
 
+Son imzalı macOS paketi: [VPS Gözcü 0.2.1 Release](https://github.com/mehmetyazicidev/vps-gozcu/releases/tag/v0.2.1). İndirme paketinin SHA-256 checksum dosyası aynı release içinde bulunur.
+
 ## Mimari
 
 ```text
@@ -99,4 +101,4 @@ Bu proje [MIT Lisansı](LICENSE) ile dağıtılır.
 
 ## Durum
 
-İlk `v0.2.0` imzalı ve notarized macOS paketi GitHub Releases üzerinden yayınlandı. Sağlık geçişleri ve bağlantı doğrulama akışı macOS tarafında güçlendirildi; sonraki odak, iPhone uygulamasıyla ortak sağlık kurallarının eşlenmesi ve güvenli güncelleme kanalıdır. Uygulama 7/24 merkezi izleme hizmeti sunduğunu iddia etmez.
+`v0.2.1` imzalı ve notarized macOS paketi GitHub Releases üzerinden yayınlandı. Sağlık geçişleri, bağlantı doğrulama ve eski ölçüm görünürlüğü macOS tarafında güçlendirildi; sonraki odak, iPhone uygulamasıyla ortak sağlık kurallarının eşlenmesi ve güvenli güncelleme kanalıdır. Uygulama 7/24 merkezi izleme hizmeti sunduğunu iddia etmez.
