@@ -19,15 +19,16 @@ struct MenuBarView: View {
             Text("\(model.enabledProfiles.count) sunucu, \(model.criticalCount) kritik, \(model.warningCount) uyarı, \(model.unknownCount) bilinmiyor")
                 .foregroundStyle(AppTheme.textSecondary)
             Divider()
-            ForEach(model.enabledProfiles.prefix(8)) { profile in
-                let health = model.snapshots[profile.id]?.health ?? .unknown
-                HStack {
+                ForEach(model.enabledProfiles.prefix(8)) { profile in
+                    let health = model.snapshots[profile.id]?.health ?? .unknown
+                    let snapshot = model.snapshots[profile.id]
+                    HStack {
                     Circle()
                         .fill(AppTheme.color(for: health))
                         .frame(width: 8, height: 8)
                     Text(profile.name).foregroundStyle(.white)
                     Spacer()
-                    Text(model.snapshots[profile.id]?.health.title ?? "Bekliyor")
+                    Text(snapshot.map { $0.isReachable ? $0.health.title : $0.availabilityTitle } ?? "Bekliyor")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(AppTheme.color(for: health))
                 }

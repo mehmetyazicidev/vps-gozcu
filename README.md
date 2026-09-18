@@ -20,6 +20,8 @@ VPS Gözcü, birden fazla Linux VPS'i mevcut SSH erişiminiz üzerinden izleyen 
 - Docker, systemd, health URL ve yedek yaşı kontrolleri
 - TLS sertifikası bitiş tarihi ve eşik tabanlı sağlık seviyeleri
 - Kalıcı yerel metrik geçmişi, olay akışı ve kritik macOS bildirimleri
+- Durum değişimi odaklı olay akışı; tekrarlı poll kayıtlarını bastırma ve toparlanma olayları
+- Tek seferlik SSH kesintilerini doğrulama eşiğiyle ayıran kritik bildirimler
 - Eksik ölçümleri yanlışlıkla `0` göstermeyen `Bilinmiyor` durumu
 - Bakım akışlarını izleme akışından ayıran, backup-first onay kapısı
 
@@ -97,4 +99,4 @@ Bu proje [MIT Lisansı](LICENSE) ile dağıtılır.
 
 ## Durum
 
-İlk `v0.2.0` imzalı ve notarized macOS paketi GitHub Releases üzerinden yayınlandı. Sonraki odak, sürüm yayın otomasyonu ve güvenli güncelleme kanalıdır. Uygulama 7/24 merkezi izleme hizmeti sunduğunu iddia etmez.
+İlk `v0.2.0` imzalı ve notarized macOS paketi GitHub Releases üzerinden yayınlandı. Sağlık geçişleri ve bağlantı doğrulama akışı macOS tarafında güçlendirildi; sonraki odak, iPhone uygulamasıyla ortak sağlık kurallarının eşlenmesi ve güvenli güncelleme kanalıdır. Uygulama 7/24 merkezi izleme hizmeti sunduğunu iddia etmez.

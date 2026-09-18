@@ -89,6 +89,21 @@ struct ContentView: View {
 
             Divider()
 
+            Picker("Tarama aralığı", selection: Binding(
+                get: { model.pollingInterval },
+                set: { model.setPollingInterval($0) }
+            )) {
+                Text("30 saniye").tag(TimeInterval(30))
+                Text("1 dakika").tag(TimeInterval(60))
+                Text("5 dakika").tag(TimeInterval(300))
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 12)
+            Text("İzleme yalnızca uygulama çalışırken yapılır.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 12)
+
             HStack {
                 StatusCount(color: .red, value: model.criticalCount, label: "kritik")
                 Spacer()
@@ -259,6 +274,11 @@ private struct ServerDetailView: View {
                 Text(snapshot?.summary ?? "Sunucu henüz sorgulanmadı")
                     .font(.callout)
                     .foregroundStyle(AppTheme.textSecondary)
+                if let snapshot, !snapshot.isReachable {
+                    Label(snapshot.availabilityTitle, systemImage: "wifi.slash")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(AppTheme.critical)
+                }
                 if let lastSuccessfulAt {
                     HStack(spacing: 6) {
                         Text("Son başarılı tarama")
@@ -270,7 +290,16 @@ private struct ServerDetailView: View {
                 }
             }
             Spacer()
-            HealthBadge(health: snapshot?.health ?? .unknown)
+            TimelineView(.periodic(from: .now, by: 15)) { context in
+                VStack(alignment: .trailing, spacing: 6) {
+                    HealthBadge(health: snapshot?.health ?? .unknown)
+                    if let snapshot, !profile.isEnabled || !MonitoringPolicy.isFresh(snapshot.capturedAt, now: context.date) {
+                        Label("Eski ölçüm", systemImage: "clock.badge.exclamationmark")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(AppTheme.warning)
+                    }
+                }
+            }
         }
         .padding(.bottom, 2)
     }

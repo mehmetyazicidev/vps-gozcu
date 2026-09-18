@@ -48,9 +48,10 @@ SwiftUI arayüzü
 - Eksik veya ayrıştırılamayan sayısal değerler `0` kabul edilmez; `Bilinmiyor` durumuna dönüşür.
 - Genel sağlık seviyesi tek tek `HealthCheck` sonuçlarından türetilir.
 - Öncelik sırası kritik, uyarı, bilinmiyor ve sağlıklı şeklindedir.
-- Aynı sağlık seviyesinde uyarı nedeni değişirse yeni olay kaydı üretilir.
+- Olay akışı polling günlüğü değildir: bilginin ayrıntısı (ör. disk yüzdesi veya yedek yaşı) değişse bile aynı kontrol ve sağlık seviyesi korunuyorsa yeni kayıt üretilmez; yeni bulgu, seviye değişimi ve toparlanma kaydedilir.
 - Son başarılı tarama, bağlantı hatası oluşsa bile kullanıcıya ayrıca gösterilir.
-- SSH sorgusu geçici ağ hatalarını azaltmak için en fazla iki kez denenir.
+- SSH sorgusu istemci tarafında en fazla iki kez denenir. İlk ardışık bağlantı hatası olay akışında bilinmiyor/doğrulama bekleniyor olarak kalır; ikinci ardışık hata kritik olarak onaylanır ve yerel bildirim gönderilir. Başarılı tarama bu sayacı sıfırlar.
+- SSH erişilebilirliği `ServerSnapshot.isReachable` ile sağlık seviyesinden ayrı tutulur; böylece erişilemeyen sunucu ile erişilebilir sunucudaki disk/servis arızası aynı gerekçe sanılmaz.
 - Yedek yaşı klasör adından tahmin edilmez; sunucudaki gerçek değiştirilme zamanından hesaplanır.
 - HTTPS profillerinde sertifika bitiş tarihi OpenSSL ile salt-okunur alınır; HTTP sağlık kontrolü sertifika doğrulamasını ayrıca sürdürür.
 - Varsayılan yedek eşikleri 26 saat uyarı ve 48 saat kritik; TLS eşikleri 30 gün uyarı ve 7 gün kritiktir.

@@ -10,12 +10,14 @@ final class AppModel: ObservableObject {
     @Published private(set) var events: [MonitorEvent] = []
     @Published private(set) var isRefreshing = false
     @Published var pollingInterval: TimeInterval = 300
+    private let preferences = UserDefaults.standard
     @Published var showingAddServer = false
     @Published var editingProfile: ServerProfile?
 
     private let sshClient = SSHClient()
     private let notificationService = NotificationService()
     private var pollingTask: Task<Void, Never>?
+    private var consecutiveConnectionFailures: [UUID: Int] = [:]
 
     init() {
         let loaded = ConfigurationStore.loadProfiles()
@@ -27,6 +29,7 @@ final class AppModel: ObservableObject {
             samples.last?.date
         }
         selectedServerID = loaded.first?.id
+        pollingInterval = MonitoringPolicy.validInterval(preferences.double(forKey: "monitoring.pollingSeconds"))
     }
 
     var selectedProfile: ServerProfile? {
@@ -62,6 +65,12 @@ final class AppModel: ObservableObject {
                 await refreshAll()
             }
         }
+    }
+
+    func setPollingInterval(_ interval: TimeInterval) {
+        pollingInterval = MonitoringPolicy.validInterval(interval)
+        preferences.set(pollingInterval, forKey: "monitoring.pollingSeconds")
+        restartPolling()
     }
 
     func restartPolling() {
@@ -120,6 +129,7 @@ final class AppModel: ObservableObject {
         snapshots[profile.id] = nil
         history[profile.id] = nil
         lastSuccessfulRefresh[profile.id] = nil
+        consecutiveConnectionFailures[profile.id] = nil
         if selectedServerID == profile.id {
             selectedServerID = profiles.first?.id
         }
@@ -135,35 +145,44 @@ final class AppModel: ObservableObject {
     }
 
     private func apply(_ outcome: ProbeOutcome) {
+        // A deleted, disabled or edited profile must not receive an obsolete probe result.
+        guard MonitoringPolicy.accepts(outcome.profile, currentProfiles: profiles) else { return }
         switch outcome {
         case let .success(profile, snapshot):
             let previous = snapshots[profile.id]
+            consecutiveConnectionFailures[profile.id] = nil
             snapshots[profile.id] = snapshot
             lastSuccessfulRefresh[profile.id] = snapshot.capturedAt
             history[profile.id, default: []].append(MetricSample(snapshot: snapshot))
             history[profile.id] = Array(history[profile.id, default: []].suffix(720))
 
-            if previous?.health != snapshot.health || previous?.summary != snapshot.summary {
-                let level: MonitorEvent.Level
-                switch snapshot.health {
-                case .critical: level = .critical
-                case .warning: level = .warning
-                case .unknown: level = .unknown
-                case .healthy: level = .info
-                }
-                events.insert(MonitorEvent(server: profile, level: level, message: snapshot.summary), at: 0)
-                if snapshot.health == .critical {
+            let transition = HealthTransitionEvaluator.evaluate(previous: previous, current: snapshot)
+            if transition.shouldRecordEvent {
+                events.insert(MonitorEvent(server: profile, level: transition.eventLevel, message: snapshot.summary), at: 0)
+                if transition.shouldNotify {
                     Task { await notificationService.notifyCritical(server: profile, snapshot: snapshot) }
                 }
             }
 
         case let .failure(profile, message):
             let snapshot = ServerSnapshot.unreachable(message: message)
-            let wasCritical = snapshots[profile.id]?.health == .critical
+            let previous = snapshots[profile.id]
+            let failureCount = (consecutiveConnectionFailures[profile.id] ?? 0) + 1
+            consecutiveConnectionFailures[profile.id] = failureCount
             snapshots[profile.id] = snapshot
-            if !wasCritical {
-                events.insert(MonitorEvent(server: profile, level: .critical, message: message), at: 0)
-                Task { await notificationService.notifyCritical(server: profile, snapshot: snapshot) }
+            let transition = HealthTransitionEvaluator.evaluate(
+                previous: previous,
+                current: snapshot,
+                consecutiveConnectionFailures: failureCount
+            )
+            if transition.shouldRecordEvent {
+                let eventMessage = failureCount == 1
+                    ? "SSH bağlantısı doğrulanıyor: \(message)"
+                    : message
+                events.insert(MonitorEvent(server: profile, level: transition.eventLevel, message: eventMessage), at: 0)
+                if transition.shouldNotify {
+                    Task { await notificationService.notifyCritical(server: profile, snapshot: snapshot) }
+                }
             }
         }
 
@@ -192,4 +211,10 @@ final class AppModel: ObservableObject {
 private enum ProbeOutcome: Sendable {
     case success(ServerProfile, ServerSnapshot)
     case failure(ServerProfile, String)
+
+    var profile: ServerProfile {
+        switch self {
+        case let .success(profile, _), let .failure(profile, _): return profile
+        }
+    }
 }

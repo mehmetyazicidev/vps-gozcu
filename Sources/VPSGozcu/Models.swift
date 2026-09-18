@@ -166,6 +166,17 @@ struct ServerSnapshot: Codable, Hashable, Sendable {
     let containers: [ContainerStatus]
     let summary: String
 
+    /// A failed SSH probe is kept as critical for the menu-bar safety signal,
+    /// but it is exposed separately so the UI can distinguish availability
+    /// from an unhealthy service on a reachable host.
+    var isReachable: Bool {
+        !checks.contains { $0.id == "ssh" && $0.health == .critical }
+    }
+
+    var availabilityTitle: String {
+        isReachable ? "SSH erişilebilir" : "SSH erişilemiyor"
+    }
+
     static func unreachable(message: String) -> ServerSnapshot {
         ServerSnapshot(
             capturedAt: .now,
@@ -219,7 +230,7 @@ struct MetricSample: Identifiable, Codable, Hashable, Sendable {
 }
 
 struct MonitorEvent: Identifiable, Codable, Hashable, Sendable {
-    enum Level: String, Codable, Sendable {
+    enum Level: String, Codable, Equatable, Sendable {
         case info
         case unknown
         case warning
